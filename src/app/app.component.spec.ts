@@ -29,7 +29,7 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('app');
   }));
 
-  it('should render title in a h1 tag', fakeAsync(() => {
+  it('should getRenderFunction title in a h1 tag', fakeAsync(() => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     tick();

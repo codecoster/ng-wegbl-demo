@@ -1,6 +1,6 @@
 import { AfterViewInit, Component } from '@angular/core';
 import { WebglService } from '../webgl.service';
-import { Mesh } from 'three';
+import { Group, Mesh, Object3D } from 'three';
 
 
 @Component({
@@ -10,26 +10,22 @@ import { Mesh } from 'three';
 })
 export class SimpleWebglComponent implements AfterViewInit {
 
-  cube: Mesh;
+  mesh: Mesh;
 
   constructor(private webgl: WebglService) {
   }
 
   ngAfterViewInit(): void {
     this.webgl.init();
-    this.cube = this.webgl.makeCube();
+    this.mesh = this.webgl.makeT();
   }
 
   onClick() {
-    this.webgl.rotate(this.cube);
+    this.webgl.rotate(this.mesh);
   }
 
-  onClickLine(){
+  onClickLine() {
     this.webgl.makeLine();
-  }
-
-  onClickT(){
-    this.webgl.makeT()
   }
 
 }
