@@ -1,19 +1,20 @@
-import { Injectable } from '@angular/core';
+import { ElementRef, Injectable, Renderer2 } from '@angular/core';
 
 import * as THREE from 'three';
 import { SpotLightShadow } from 'three';
 
 @Injectable()
 export class WebglService {
-  scene = new THREE.Scene();
-  camera = new THREE.PerspectiveCamera(23, window.innerWidth / window.innerHeight, 10, 3000);
+  private scene = new THREE.Scene();
+  private camera = new THREE.PerspectiveCamera(23, window.innerWidth / window.innerHeight, 10, 3000);
+  private renderer = new THREE.WebGLRenderer();
 
-  renderer = new THREE.WebGLRenderer();
+  private animationId: number;
+  private rotationDirection: -1 | 1 = 1;
 
-  animationId: number;
-  rotationDirection: -1 | 1 = 1;
+  private fontPromise: Promise<THREE.Font>;
 
-  init() {
+  init(element: ElementRef, renderer2: Renderer2) {
     this.camera.position.set(700, 50, 1900);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
     this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -30,9 +31,71 @@ export class WebglService {
     light.shadow.mapSize.height = 1024;
     this.scene.add(light);
 
-    document.body.appendChild(this.renderer.domElement);
+    renderer2.appendChild(element.nativeElement, this.renderer.domElement);
     this.getRenderFunction()();
+
+    this.fontPromise = this.loadFont();
   }
+
+  loadFont(): Promise<THREE.Font> {
+    const loader = new THREE.FontLoader();
+    return new Promise((resolve, reject) => {
+        loader.load('assets/helvetiker_bold.typeface.json', (font: any) => {
+            resolve(font);
+      });
+    });
+  }
+
+  makeT(): THREE.Mesh {
+    const mesh = new THREE.Mesh();
+    const pivot = new THREE.Object3D();
+    this.fontPromise
+      .then((font) => {
+        const textGeo = new THREE.TextGeometry('trion', {
+          font: font,
+          size: 200,
+          height: 50,
+          curveSegments: 12,
+          bevelThickness: 2,
+          bevelSize: 5,
+          bevelEnabled: true
+        });
+        textGeo.computeBoundingBox();
+        const centerOffset = -0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+        const textMaterial = new THREE.MeshPhongMaterial({color: 0x80cc28, specular: 0xffffff});
+        mesh.geometry = textGeo;
+        mesh.material = textMaterial;
+        mesh.position.x = centerOffset;
+        mesh.position.y = -20;
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+
+        // Store original position
+        const offset = mesh.geometry.boundingBox.getCenter();
+
+        // Center geometry faces
+        mesh.geometry.center();
+
+        // Add to pivot group
+        pivot.add(mesh);
+
+        // Offset pivot group by original position
+        pivot.position.set(offset.x, offset.y, offset.z);
+
+        this.scene.add(pivot);
+      });
+    return mesh;
+  }
+
+  rotate(mesh: THREE.Mesh) {
+    this.getRenderFunction(() => {
+      if (mesh.rotation.y > Math.PI / 2 || mesh.rotation.y < -Math.PI / 3) {
+        this.rotationDirection *= -1;
+      }
+      mesh.rotation.y += 0.01 * this.rotationDirection;
+    })();
+  }
+
 
   makeLine() {
     const material = new THREE.LineBasicMaterial({color: 0x0000ff, linewidth: 10});
@@ -44,61 +107,20 @@ export class WebglService {
     this.scene.add(line);
   }
 
-  makeT(): THREE.Mesh {
-    const loader = new THREE.FontLoader();
-    const mesh = new THREE.Mesh();
-    const pivot = new THREE.Object3D();
-    loader.load('assets/helvetiker_bold.typeface.json', (font: any) => {
-
-      const textGeo = new THREE.TextGeometry('trion', {
-        font: font,
-        size: 200,
-        height: 50,
-        curveSegments: 12,
-        bevelThickness: 2,
-        bevelSize: 5,
-        bevelEnabled: true
-      });
-      textGeo.computeBoundingBox();
-      const centerOffset = -0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
-      const textMaterial = new THREE.MeshPhongMaterial({color: 0x80cc28, specular: 0xffffff});
-      mesh.geometry = textGeo;
-      mesh.material = textMaterial;
-      mesh.position.x = centerOffset;
-      mesh.position.y = -20;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-
-      // Store original position
-      const offset = mesh.geometry.boundingBox.getCenter();
-
-      // Center geometry faces
-      mesh.geometry.center();
-
-      // Add to pivot group
-      pivot.add(mesh);
-
-      // Offset pivot group by original position
-      pivot.position.set(offset.x, offset.y, offset.z);
-
-      this.scene.add(pivot);
-    });
-    return mesh;
-  }
-
-  rotate(mesh: THREE.Mesh) {
-    this.getRenderFunction(() => {
-      mesh.rotation.y += 0.01;
-    })();
-  }
-
   private getRenderFunction(animation?: () => void): () => void {
     return () => {
+      this.cancelPendingAnimations();
       this.animationId = requestAnimationFrame(this.getRenderFunction(animation));
       if (typeof animation === 'function') {
         animation();
       }
       this.renderer.render(this.scene, this.camera);
     };
+  }
+
+  public cancelPendingAnimations() {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
   }
 }

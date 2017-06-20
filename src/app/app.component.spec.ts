@@ -3,8 +3,12 @@ import { TestBed, async, discardPeriodicTasks, fakeAsync, tick } from '@angular/
 import { AppComponent } from './app.component';
 import { SimpleWebglComponent } from './simple-webgl/simple-webgl.component';
 import { WebglService } from './webgl.service';
+import { Font } from 'three';
+
+const font = require('assets/helvetiker_bold.typeface.json');
 
 describe('AppComponent', () => {
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [
@@ -15,6 +19,8 @@ describe('AppComponent', () => {
         WebglService
       ]
     }).compileComponents();
+    const service: WebglService = TestBed.get(WebglService);
+    spyOn(service, 'loadFont').and.returnValue(Promise.resolve(new Font(font)));
   }));
 
   it('should create the app', async(() => {

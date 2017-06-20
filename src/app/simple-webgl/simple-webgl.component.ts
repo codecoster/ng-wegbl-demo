@@ -1,6 +1,6 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Renderer2 } from '@angular/core';
 import { WebglService } from '../webgl.service';
-import { Group, Mesh, Object3D } from 'three';
+import { Mesh } from 'three';
 
 
 @Component({
@@ -12,11 +12,13 @@ export class SimpleWebglComponent implements AfterViewInit {
 
   mesh: Mesh;
 
-  constructor(private webgl: WebglService) {
+  constructor(private webgl: WebglService,
+              private el: ElementRef,
+              private renderer2: Renderer2) {
   }
 
   ngAfterViewInit(): void {
-    this.webgl.init();
+    this.webgl.init(this.el, this.renderer2);
     this.mesh = this.webgl.makeT();
   }
 
@@ -26,6 +28,10 @@ export class SimpleWebglComponent implements AfterViewInit {
 
   onClickLine() {
     this.webgl.makeLine();
+  }
+
+  cancel() {
+    this.webgl.cancelPendingAnimations();
   }
 
 }

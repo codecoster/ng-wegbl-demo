@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SimpleWebglComponent } from './simple-webgl.component';
 import { WebglService } from '../webgl.service';
+import { By } from '@angular/platform-browser';
 
 describe('SimpleWebglComponent', () => {
   let component: SimpleWebglComponent;
