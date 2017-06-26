@@ -6,8 +6,8 @@ import { SpotLightShadow } from 'three';
 @Injectable()
 export class WebglService {
   private scene = new THREE.Scene();
-  private camera = new THREE.PerspectiveCamera(23, window.innerWidth / window.innerHeight, 10, 3000);
   private renderer = new THREE.WebGLRenderer();
+  private camera: THREE.Camera;
 
   private animationId: number;
   private rotationDirection: -1 | 1 = 1;
@@ -15,9 +15,10 @@ export class WebglService {
   private fontPromise: Promise<THREE.Font>;
 
   init(element: ElementRef, renderer2: Renderer2) {
+    this.camera = new THREE.PerspectiveCamera(23, 1.77, 10, 3000);
     this.camera.position.set(700, 50, 1900);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(element.nativeElement.offsetWidth, element.nativeElement.offsetWidth / 1.77);
 
     const ambient = new THREE.AmbientLight(0x444444);
     this.scene.add(ambient);
@@ -40,8 +41,8 @@ export class WebglService {
   loadFont(): Promise<THREE.Font> {
     const loader = new THREE.FontLoader();
     return new Promise((resolve, reject) => {
-        loader.load('assets/helvetiker_bold.typeface.json', (font: any) => {
-            resolve(font);
+      loader.load('assets/helvetiker_bold.typeface.json', (font: any) => {
+        resolve(font);
       });
     });
   }
