@@ -46,15 +46,16 @@ describe('WebglService', () => {
       service2.init(component.el, component.renderer);
       fixture.detectChanges();
       const mesh = service2.makeT();
+      service2.rotate(mesh);
       fixture.detectChanges();
       fixture.whenStable()
         .then(() => {
-          expect(mesh.position.z).toBe(0);
-          expect(mesh.position.y).toBe(-20);
-          expect(mesh.position.x).toBe(-294);
-          expect(mesh.rotation.x).toBe(0);
-          expect(mesh.rotation.y).toBe(0);
-          expect(mesh.rotation.z).toBe(0);
+          expect(mesh.position.z).toBe(0, 'z');
+          expect(mesh.position.y).toBe(-20, 'y');
+          expect(mesh.position.x).toBe(-294, 'x');
+          expect(mesh.rotation.x).toBe(0, 'rx');
+          expect(mesh.rotation.y).toBe(0, 'ry');
+          expect(mesh.rotation.z).toBe(0, 'rz');
           expect(mesh.geometry.boundingBox.getCenter()).toEqual(new Vector3());
         });
     })));
