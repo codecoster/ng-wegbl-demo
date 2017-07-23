@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, Renderer2 } from '@angular/core';
 import { WebglService } from '../webgl.service';
-import { Mesh } from 'three';
+import { Line, Object3D } from 'three';
 
 
 @Component({
@@ -10,7 +10,8 @@ import { Mesh } from 'three';
 })
 export class SimpleWebglComponent implements AfterViewInit {
 
-  mesh: Mesh;
+  trionGroup: Object3D;
+  line: Line;
 
   constructor(private webgl: WebglService,
               private el: ElementRef,
@@ -19,19 +20,29 @@ export class SimpleWebglComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.webgl.init(this.el, this.renderer2);
-    this.mesh = this.webgl.makeT();
+    this.trionGroup = this.webgl.makeT();
   }
 
   onClick() {
-    this.webgl.rotate(this.mesh);
+    this.webgl.rotate(this.trionGroup.getObjectByName('trionT'));
   }
 
   onClickLine() {
-    this.webgl.makeLine();
+    if (!this.line) {
+      this.line = this.webgl.makeLine();
+    } else {
+      this.removeLine();
+    }
   }
 
-  cancel() {
-    this.webgl.cancelPendingAnimations();
+  reset() {
+    this.removeLine();
+    this.webgl.deleteObject(this.trionGroup);
+    this.trionGroup = this.webgl.makeT();
   }
 
+  private removeLine() {
+    this.webgl.deleteObject(this.line);
+    this.line = null;
+  }
 }

@@ -1,4 +1,4 @@
-import { ElementRef, Injectable, Renderer2 } from '@angular/core';
+import { ElementRef, Injectable, NgZone, Renderer2 } from '@angular/core';
 
 import * as THREE from 'three';
 import { SpotLightShadow } from 'three';
@@ -47,7 +47,7 @@ export class WebglService {
     });
   }
 
-  makeT(): THREE.Mesh {
+  makeT(): THREE.Object3D {
     const mesh = new THREE.Mesh();
     const pivot = new THREE.Object3D();
     this.fontPromise
@@ -64,6 +64,7 @@ export class WebglService {
         textGeo.computeBoundingBox();
         const centerOffset = -0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
         const textMaterial = new THREE.MeshPhongMaterial({color: 0x80cc28, specular: 0xffffff});
+        mesh.name = 'trionT';
         mesh.geometry = textGeo;
         mesh.material = textMaterial;
         mesh.position.x = centerOffset;
@@ -85,20 +86,19 @@ export class WebglService {
 
         this.scene.add(pivot);
       });
-    return mesh;
+    return pivot;
   }
 
-  rotate(mesh: THREE.Mesh) {
+  rotate(obj: THREE.Object3D) {
     this.getRenderFunction(() => {
-      if (mesh.rotation.y > Math.PI / 2 || mesh.rotation.y < -Math.PI / 3) {
+      if (obj.rotation.y > Math.PI / 2 || obj.rotation.y < -Math.PI / 3) {
         this.rotationDirection *= -1;
       }
-      mesh.rotation.y += 0.01 * this.rotationDirection;
+      obj.rotation.y += 0.01 * this.rotationDirection;
     })();
   }
 
-
-  makeLine() {
+  makeLine(): THREE.Line {
     const material = new THREE.LineBasicMaterial({color: 0x0000ff, linewidth: 10});
     const geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(-200, 0, 200));
@@ -106,6 +106,17 @@ export class WebglService {
     geometry.vertices.push(new THREE.Vector3(200, 0, 200));
     const line = new THREE.Line(geometry, material);
     this.scene.add(line);
+    return line;
+  }
+
+  deleteObject(obj: THREE.Object3D) {
+    this.scene.remove(obj);
+  }
+
+  cancelPendingAnimations() {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
   }
 
   private getRenderFunction(animation?: () => void): () => void {
@@ -117,11 +128,5 @@ export class WebglService {
       }
       this.renderer.render(this.scene, this.camera);
     };
-  }
-
-  public cancelPendingAnimations() {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-    }
   }
 }

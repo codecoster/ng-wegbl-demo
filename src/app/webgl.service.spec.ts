@@ -4,7 +4,7 @@ import {
 
 import { WebglService } from './webgl.service';
 import { Component, ElementRef, Renderer2 } from '@angular/core';
-import { Font, Vector3 } from 'three';
+import { Font, Mesh, Vector3 } from 'three';
 
 describe('WebglService', () => {
 
@@ -45,18 +45,24 @@ describe('WebglService', () => {
     it('should create trion', async(inject([WebglService], (service2: WebglService) => {
       service2.init(component.el, component.renderer);
       fixture.detectChanges();
-      const mesh = service2.makeT();
-      service2.rotate(mesh);
+      const obj = service2.makeT();
       fixture.detectChanges();
       fixture.whenStable()
         .then(() => {
-          expect(mesh.position.z).toBe(0, 'z');
-          expect(mesh.position.y).toBe(-20, 'y');
-          expect(mesh.position.x).toBe(-294, 'x');
-          expect(mesh.rotation.x).toBe(0, 'rx');
-          expect(mesh.rotation.y).toBe(0, 'ry');
-          expect(mesh.rotation.z).toBe(0, 'rz');
-          expect(mesh.geometry.boundingBox.getCenter()).toEqual(new Vector3());
+          const mesh = obj.children[0] as Mesh;
+          service2.rotate(mesh);
+          fixture.detectChanges();
+          fixture.whenStable()
+            .then(() => {
+              expect(mesh instanceof Mesh).toBeTruthy();
+              expect(mesh.position.z).toBe(0, 'z');
+              expect(mesh.position.y).toBe(-20, 'y');
+              expect(mesh.position.x).toBe(-294, 'x');
+              expect(mesh.rotation.x).toBe(0, 'rx');
+              expect(mesh.rotation.y).toBe(0.01, 'ry');
+              expect(mesh.rotation.z).toBe(0, 'rz');
+              expect(mesh.geometry.boundingBox.getCenter()).toEqual(new Vector3());
+            });
         });
     })));
   }

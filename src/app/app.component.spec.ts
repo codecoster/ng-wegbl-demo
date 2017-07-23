@@ -1,13 +1,18 @@
-import { TestBed, async, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
+import {
+  TestBed, async, fakeAsync, tick, flushMicrotasks, discardPeriodicTasks,
+  resetFakeAsyncZone
+} from '@angular/core/testing';
 
 import { AppComponent } from './app.component';
 import { SimpleWebglComponent } from './simple-webgl/simple-webgl.component';
 import { WebglService } from './webgl.service';
 import { Font } from 'three';
 
-const font = require('assets/helvetiker_bold.typeface.json');
-
 describe('AppComponent', () => {
+
+  const font = require('assets/helvetiker_bold.typeface.json');
+  let spy: jasmine.Spy;
+  let service: WebglService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -19,8 +24,8 @@ describe('AppComponent', () => {
         WebglService
       ]
     }).compileComponents();
-    const service: WebglService = TestBed.get(WebglService);
-    spyOn(service, 'loadFont').and.returnValue(Promise.resolve(new Font(font)));
+    service = TestBed.get(WebglService);
+    spy = spyOn(service, 'loadFont').and.returnValue(Promise.resolve(new Font(font)));
   }));
 
   it('should create the app', async(() => {
@@ -33,6 +38,12 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     tick();
+
+    // CancelPendingAnimations to prevent ZoneJS Error
+    // https://github.com/angular/zone.js/issues/845
+    service.cancelPendingAnimations();
+
+    expect(spy).toHaveBeenCalledTimes(1);
     const compiled = fixture.debugElement.nativeElement;
     expect(compiled.querySelector('h1').textContent).toContain('Hello WebGl and Angular!');
   }));
