@@ -1,38 +1,32 @@
-import { ElementRef, Injectable, NgZone, Renderer2 } from '@angular/core';
+import { ElementRef, Injectable, Renderer2 } from '@angular/core';
 
 import * as THREE from 'three';
-import { SpotLightShadow } from 'three';
 
 @Injectable()
 export class WebglService {
-  private scene = new THREE.Scene();
-  private renderer = new THREE.WebGLRenderer();
   private camera: THREE.Camera;
+
+  private scene = new THREE.Scene();
+  private webGlRenderer = new THREE.WebGLRenderer();
 
   private animationId: number;
   private rotationDirection: -1 | 1 = 1;
 
   private fontPromise: Promise<THREE.Font>;
 
-  init(element: ElementRef, renderer2: Renderer2) {
+  init(element: ElementRef, ngRenderer: Renderer2) {
     this.camera = new THREE.PerspectiveCamera(23, 1.77, 10, 3000);
     this.camera.position.set(700, 50, 1900);
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-    this.renderer.setSize(element.nativeElement.offsetWidth, element.nativeElement.offsetWidth / 1.77);
 
     const ambient = new THREE.AmbientLight(0x444444);
     this.scene.add(ambient);
     const light = new THREE.SpotLight(0xffffff, 1, 0, Math.PI / 2);
     light.position.set(0, 1500, 1000);
-    light.target.position.set(0, 0, 0);
-    light.castShadow = true;
-    light.shadow = new THREE.LightShadow(new THREE.PerspectiveCamera(50, 1, 1200, 2500))as SpotLightShadow;
-    light.shadow.bias = 0.0001;
-    light.shadow.mapSize.width = 2048;
-    light.shadow.mapSize.height = 1024;
     this.scene.add(light);
 
-    renderer2.appendChild(element.nativeElement, this.renderer.domElement);
+    this.webGlRenderer.setSize(element.nativeElement.offsetParent.offsetWidth, element.nativeElement.offsetParent.offsetWidth / 1.77);
+    ngRenderer.appendChild(element.nativeElement, this.webGlRenderer.domElement);
     this.getRenderFunction()();
 
     this.fontPromise = this.loadFont();
@@ -126,7 +120,7 @@ export class WebglService {
       if (typeof animation === 'function') {
         animation();
       }
-      this.renderer.render(this.scene, this.camera);
+      this.webGlRenderer.render(this.scene, this.camera);
     };
   }
 }

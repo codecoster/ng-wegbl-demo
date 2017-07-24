@@ -5,8 +5,7 @@ import { Line, Object3D } from 'three';
 
 @Component({
   selector: 'app-simple-webgl',
-  templateUrl: './simple-webgl.component.html',
-  styleUrls: ['./simple-webgl.component.css']
+  templateUrl: './simple-webgl.component.html'
 })
 export class SimpleWebglComponent implements AfterViewInit {
 
