@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Renderer2 } from '@angular/core';
 import { WebglService } from '../webgl.service';
 import { Line, Object3D } from 'three';
 
@@ -15,6 +15,11 @@ export class SimpleWebglComponent implements AfterViewInit {
   constructor(private webgl: WebglService,
               private el: ElementRef,
               private renderer2: Renderer2) {
+  }
+
+  @HostListener('window:resize')
+  resize() {
+    this.webgl.resize(document.body.clientWidth);
   }
 
   ngAfterViewInit(): void {
