@@ -94,14 +94,21 @@ export class WebglService {
   }
 
   makeLine(): THREE.Line {
-    const material = new THREE.LineBasicMaterial({color: 0x0000ff, linewidth: 10});
+
     const geometry = new THREE.Geometry();
     geometry.vertices.push(new THREE.Vector3(-200, 0, 200));
     geometry.vertices.push(new THREE.Vector3(0, 200, 200));
     geometry.vertices.push(new THREE.Vector3(200, 0, 200));
+
+    const material = new THREE.LineBasicMaterial({
+      color: 0x0000ff,
+      linewidth: 10
+    });
     const line = new THREE.Line(geometry, material);
+
     this.scene.add(line);
     this.webGlRenderer.render(this.scene, this.camera);
+
     return line;
   }
 
