@@ -12,7 +12,6 @@ describe('AppComponent', () => {
 
   const font = require('assets/helvetiker_bold.typeface.json');
   let spy: jasmine.Spy;
-  let service: WebglService;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -24,7 +23,7 @@ describe('AppComponent', () => {
         WebglService
       ]
     }).compileComponents();
-    service = TestBed.get(WebglService);
+    const service = TestBed.get(WebglService);
     spy = spyOn(service, 'loadFont').and.returnValue(Promise.resolve(new Font(font)));
   }));
 
@@ -34,15 +33,9 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   }));
 
-  it('should render title in a h1 tag', fakeAsync(() => {
+  it('should render title in a h1 tag', async(() => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
-    tick();
-
-    // CancelPendingAnimations to prevent ZoneJS Error
-    // https://github.com/angular/zone.js/issues/845
-    service.cancelPendingAnimations();
-
     expect(spy).toHaveBeenCalledTimes(1);
     const compiled = fixture.debugElement.nativeElement;
     expect(compiled.querySelector('h1').textContent).toContain('Hello WebGl and Angular!');

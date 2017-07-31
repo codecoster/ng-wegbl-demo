@@ -1,4 +1,4 @@
-import { ElementRef, Injectable, Renderer2 } from '@angular/core';
+import { ElementRef, Injectable, NgZone, Renderer2 } from '@angular/core';
 
 import * as THREE from 'three';
 
@@ -13,6 +13,9 @@ export class WebglService {
   private rotationDirection: -1 | 1 = 1;
 
   private fontPromise: Promise<THREE.Font>;
+
+  constructor(private zone: NgZone) {
+  }
 
   init(element: ElementRef, ngRenderer: Renderer2) {
     this.webGlRenderer.setSize(document.body.clientWidth, document.body.clientWidth / 1.8);
@@ -126,7 +129,7 @@ export class WebglService {
     })();
   }
 
-  cancelPendingAnimations() {
+  cancelAnimation() {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
@@ -134,12 +137,14 @@ export class WebglService {
 
   private animationStarterFactory(animation?: () => void): () => void {
     return () => {
-      this.cancelPendingAnimations();
-      if (typeof animation === 'function') {
-        animation();
-      }
-      this.webGlRenderer.render(this.scene, this.camera);
-      this.animationId = requestAnimationFrame(this.animationStarterFactory(animation));
+      this.zone.runOutsideAngular(() => {
+        this.cancelAnimation();
+        if (typeof animation === 'function') {
+          animation();
+        }
+        this.webGlRenderer.render(this.scene, this.camera);
+        this.animationId = requestAnimationFrame(this.animationStarterFactory(animation));
+      });
     };
   }
 }
