@@ -7,7 +7,7 @@ export class WebglService {
   private camera: THREE.Camera;
 
   private scene = new THREE.Scene();
-  private webGlRenderer = new THREE.WebGLRenderer();
+  private webGlRenderer = new THREE.WebGLRenderer({antialias: true});
 
   private animationId: number;
   private rotationDirection: -1 | 1 = 1;
@@ -121,12 +121,12 @@ export class WebglService {
   }
 
   rotate(obj: THREE.Object3D) {
-    this.animationStarterFactory(() => {
+    this.animationStarter(() => {
       if (obj.rotation.y > Math.PI / 2 || obj.rotation.y < -Math.PI / 3) {
         this.rotationDirection *= -1;
       }
       obj.rotation.y += 0.01 * this.rotationDirection;
-    })();
+    });
   }
 
   cancelAnimation() {
@@ -135,16 +135,17 @@ export class WebglService {
     }
   }
 
-  private animationStarterFactory(animation?: () => void): () => void {
-    return () => {
+  private animationStarter(animation?: () => void) {
+    this.cancelAnimation();
+    const factory = () => {
       this.zone.runOutsideAngular(() => {
-        this.cancelAnimation();
         if (typeof animation === 'function') {
           animation();
         }
         this.webGlRenderer.render(this.scene, this.camera);
-        this.animationId = requestAnimationFrame(this.animationStarterFactory(animation));
+        this.animationId = requestAnimationFrame(factory);
       });
     };
+    factory();
   }
 }

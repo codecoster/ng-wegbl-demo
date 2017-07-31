@@ -40,8 +40,9 @@ export class SimpleWebglComponent implements AfterViewInit {
   }
 
   reset() {
-    this.removeLine();
+    this.webgl.cancelAnimation();
     this.webgl.deleteObject(this.trionGroup);
+    this.removeLine();
     this.trionGroup = this.webgl.makeT();
   }
 
