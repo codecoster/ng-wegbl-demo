@@ -121,7 +121,7 @@ export class WebglService {
   }
 
   rotate(obj: THREE.Object3D) {
-    this.animationStarter(() => {
+    this.startRenderingLoop(() => {
       if (obj.rotation.y > Math.PI / 2 || obj.rotation.y < -Math.PI / 3) {
         this.rotationDirection *= -1;
       }
@@ -129,23 +129,26 @@ export class WebglService {
     });
   }
 
-  cancelAnimation() {
+  cancelCurrentAnimation() {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
     }
   }
 
-  private animationStarter(animation?: () => void) {
-    this.cancelAnimation();
-    const factory = () => {
+  private startRenderingLoop(animation?: () => void) {
+
+    this.cancelCurrentAnimation();
+
+    const loop = () => {
       this.zone.runOutsideAngular(() => {
         if (typeof animation === 'function') {
           animation();
         }
         this.webGlRenderer.render(this.scene, this.camera);
-        this.animationId = requestAnimationFrame(factory);
+        this.animationId = requestAnimationFrame(loop);
       });
     };
-    factory();
+
+    loop();
   }
 }
