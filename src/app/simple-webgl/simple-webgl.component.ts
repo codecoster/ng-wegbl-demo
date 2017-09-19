@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Renderer2, ViewChild } from '@angular/core';
 import { WebglService } from '../webgl.service';
 import { Line, Object3D } from 'three';
 
@@ -9,21 +9,22 @@ import { Line, Object3D } from 'three';
 })
 export class SimpleWebglComponent implements AfterViewInit {
 
+  @ViewChild('container') canvasContainer: ElementRef;
+
   trionGroup: Object3D;
   line: Line;
 
   constructor(private webgl: WebglService,
-              private el: ElementRef,
               private renderer2: Renderer2) {
   }
 
   @HostListener('window:resize')
   resize() {
-    this.webgl.resize(document.body.clientWidth);
+    this.webgl.resize(this.canvasContainer.nativeElement.clientWidth);
   }
 
   ngAfterViewInit(): void {
-    this.webgl.init(this.el, this.renderer2);
+    this.webgl.init(this.canvasContainer, this.renderer2);
     this.trionGroup = this.webgl.makeT();
   }
 
