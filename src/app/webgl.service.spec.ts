@@ -4,7 +4,7 @@ import {
 
 import { WebglService } from './webgl.service';
 import { Component, ElementRef, Renderer2 } from '@angular/core';
-import { Font, Mesh, Vector3 } from 'three';
+import { Font, Line, Mesh, Vector3 } from 'three';
 
 describe('WebglService', () => {
 
@@ -29,13 +29,31 @@ describe('WebglService', () => {
       TestBed.compileComponents();
       const service = TestBed.get(WebglService);
       spyOn(service, 'loadFont').and.returnValue(Promise.resolve(new Font(font)));
-    }));
-
-    beforeEach(() => {
       fixture = TestBed.createComponent(TestComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
-    });
+    }));
+
+    it('should create line', async(inject([WebglService], (service: WebglService) => {
+      service.init(component.el, component.renderer);
+      const mesh = service.makeLine();
+
+      fixture.detectChanges();
+      fixture.whenStable()
+        .then(() => {
+          service.rotate(mesh);
+          mesh.geometry.computeBoundingBox();
+          const center = mesh.geometry.boundingBox.getCenter();
+
+          expect(mesh instanceof Line).toBeTruthy();
+          expect(center.x).toBe(0, 'x');
+          expect(center.y).toBe(100, 'y');
+          expect(center.z).toBe(200, 'z');
+          expect(mesh.rotation.x).toBe(0, 'rx');
+          expect(mesh.rotation.y).toBe(0.01, 'ry');
+          expect(mesh.rotation.z).toBe(0, 'rz');
+        });
+    })));
 
     it('should be created', inject([WebglService], (service: WebglService) => {
       expect(service).toBeTruthy();
@@ -62,5 +80,4 @@ describe('WebglService', () => {
         });
     })));
   }
-)
-;
+);
