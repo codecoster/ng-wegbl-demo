@@ -17,12 +17,14 @@ export class WebglService {
   constructor(private zone: NgZone) {
   }
 
-  init(element: ElementRef, ngRenderer: Renderer2) {
-    this.webGlRenderer.setSize(element.nativeElement.clientWidth, element.nativeElement.clientWidth / 1.8);
-    ngRenderer.appendChild(element.nativeElement, this.webGlRenderer.domElement);
+  init(hostElementRef: ElementRef, ngRenderer: Renderer2) {
+    const hostElement = hostElementRef.nativeElement;
+
+    this.webGlRenderer.setSize(hostElement.clientWidth, hostElement.clientWidth / 1.8);
+    ngRenderer.appendChild(hostElement, this.webGlRenderer.domElement);
 
     // Reset size of Frame after Scrollbars have been put into place by the browser
-    this.webGlRenderer.setSize(element.nativeElement.clientWidth, element.nativeElement.clientWidth / 1.8);
+    this.webGlRenderer.setSize(hostElement.clientWidth, hostElement.clientWidth / 1.8);
 
     this.camera = new THREE.PerspectiveCamera(23, 1.77, 10, 3000);
     this.camera.position.set(700, 50, 1900);
